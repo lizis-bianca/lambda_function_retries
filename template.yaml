@@ -1,0 +1,45 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: lambda-retries-SQS-example
+
+Globals:
+  Function:
+    Timeout: 60
+
+Parameters:
+  imageURI:
+   Type: String
+   Description: ECR of the application
+
+Resources:
+  LambdaRetriesSQSFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      PackageType: Image
+      ImageUri: !Ref imageURI
+      ImageConfig:
+        Command:
+          - "dist/main/lambda.handler"
+        WorkingDirectory: /var/task
+      MemorySize: 2048
+      Timeout: 300
+
+      VpcConfig:
+        SecurityGroupIds:
+          - sg-003a60a6c62edd606
+        SubnetIds:
+          - subnet-0d68eca6784f168b9
+
+      Environment:
+        Variables:
+          ENVIRONMENT: development
+          MAX_VISIBILITY_TIMEOUT: 42900
+          EVENT_BASE_BACKOFF: 25
+
+Outputs:
+  LambdaRetriesSQSFunction:
+    Description: "ARN role that controls the service"
+    Value: !GetAtt LambdaRetriesSQSFunction.Arn
+  LambdaRetriesSQSFunctionIamRole:
+    Description: "Implicit IAM Role created for LambdaRetriesSQSFunction function"
+    Value: !GetAtt LambdaRetriesSQSFunctionRole.Arn
